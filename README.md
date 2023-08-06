@@ -12,7 +12,6 @@ Find and replace all on all files (CMD+SHIFT+F):
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
-[![Nuxt][nuxt-src]][nuxt-href]
 
 In Nuxt 2, `store` directories were supported and it was easy to use vuex.
 
@@ -25,14 +24,6 @@ This module allows the `store` directory to be used in Nuxt 3, reducing the diff
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
   <!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
   <!-- - [📖 &nbsp;Documentation](https://example.com) -->
-
-## Features
-
-<!-- Highlight some of the features your module provide here -->
-
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
 
 ## Quick Setup
 
@@ -53,7 +44,7 @@ npm install --save-dev @wattanx/nuxt-vuex
 
 ```js
 export default defineNuxtConfig({
-  modules: ["@wattanx/nuxt-vuex"],
+  modules: ['@wattanx/nuxt-vuex'],
 });
 ```
 
@@ -91,7 +82,5 @@ npm run release
 [npm-version-href]: https://npmjs.com/package/@wattanx/nuxt-vuex
 [npm-downloads-src]: https://img.shields.io/npm/dm/@wattanx/nuxt-vuex.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-downloads-href]: https://npmjs.com/package/@wattanx/nuxt-vuex
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=18181B&colorB=28CF8D
+[license-src]: https://img.shields.io/npm/l/@wattanx/nuxt-vuex.svg?style=flat&colorA=18181B&colorB=28CF8D
 [license-href]: https://npmjs.com/package/@wattanx/nuxt-vuex
-[nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
-[nuxt-href]: https://nuxt.com
