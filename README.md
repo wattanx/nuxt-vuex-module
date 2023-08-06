@@ -21,7 +21,8 @@ This module allows the `store` directory to be used in Nuxt 3, reducing the diff
 
 :warning: Since Nuxt 3 recommends the use of Pinia, it is preferable to avoid the use of Vuex.
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
+[✨ &nbsp;Release Notes](/CHANGELOG.md)
+
   <!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
   <!-- - [📖 &nbsp;Documentation](https://example.com) -->
 
