@@ -49,7 +49,25 @@ export default defineNuxtConfig({
 });
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+That's it! You can now use `@wattanx/nuxt-vuex` in your Nuxt app ✨
+
+## Usage
+See Nuxt 2 docs for basic usage.
+https://v2.nuxt.com/docs/directory-structure/store/
+
+`@wattanx/nuxt-vuex` does not support nuxtServerInit.
+
+Instead, you can use the `server side plugin` or `middleware` with `useNuxtApp().$store`.
+
+```typescript
+export default defineNuxtPlugin(() => {
+  const { $store } = useNuxtApp();
+
+  if (process.server) {
+    $store.dispatch('server/increment');
+  }
+})
+```
 
 ## Development
 
