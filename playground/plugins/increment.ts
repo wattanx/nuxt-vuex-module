@@ -3,7 +3,7 @@ import { defineNuxtPlugin, useNuxtApp } from '#imports';
 export default defineNuxtPlugin(() => {
   const { $store } = useNuxtApp();
 
-  if (process.server) {
+  if (import.meta.server) {
     $store.dispatch('increment');
   }
 });
