@@ -28,30 +28,16 @@ This module allows the `store` directory to be used in Nuxt 3, reducing the diff
 
 ## Quick Setup
 
-1. Add `@wattanx/nuxt-vuex` dependency to your project
+You can install `@wattanx/nuxt-vuex` using `nuxi`:
 
 ```bash
-# Using pnpm
-pnpm add -D @wattanx/nuxt-vuex
-
-# Using yarn
-yarn add --dev @wattanx/nuxt-vuex
-
-# Using npm
-npm install --save-dev @wattanx/nuxt-vuex
-```
-
-2. Add `@wattanx/nuxt-vuex` to the `modules` section of `nuxt.config.ts`
-
-```js
-export default defineNuxtConfig({
-  modules: ['@wattanx/nuxt-vuex'],
-});
+npx nuxi@latest module add @wattanx/nuxt-vuex
 ```
 
 That's it! You can now use `@wattanx/nuxt-vuex` in your Nuxt app ✨
 
 ## Usage
+
 See Nuxt 2 docs for basic usage.
 https://v2.nuxt.com/docs/directory-structure/store/
 
@@ -66,7 +52,7 @@ export default defineNuxtPlugin(() => {
   if (process.server) {
     $store.dispatch('server/increment');
   }
-})
+});
 ```
 
 ## Development
