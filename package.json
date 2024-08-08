@@ -32,7 +32,7 @@
     "vuex": "^4.1.0"
   },
   "dependencies": {
-    "@nuxt/kit": "3.11.2",
+    "@nuxt/kit": "3.12.4",
     "hash-sum": "^2.0.0",
     "knitwork": "^1.1.0"
   },
@@ -40,8 +40,8 @@
     "@nuxt/devtools": "latest",
     "@nuxt/eslint-config": "^0.3.1",
     "@nuxt/module-builder": "^0.5.5",
-    "@nuxt/schema": "3.11.2",
-    "@nuxt/test-utils": "3.12.0",
+    "@nuxt/schema": "3.12.4",
+    "@nuxt/test-utils": "3.14.0",
     "@types/hash-sum": "^1.0.2",
     "@types/node": "^20.12.5",
     "changelogen": "^0.5.5",
