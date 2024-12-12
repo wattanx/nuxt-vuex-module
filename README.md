@@ -31,6 +31,7 @@ This module allows the `store` directory to be used in Nuxt 3, reducing the diff
 You can install `@wattanx/nuxt-vuex` using `nuxi`:
 
 ```bash
+npm install vuex
 npx nuxi@latest module add @wattanx/nuxt-vuex
 ```
 
