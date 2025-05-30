@@ -42,7 +42,7 @@
     "@nuxt/schema": "^3.17.4",
     "@nuxt/test-utils": "^3.19.0",
     "@types/hash-sum": "^1.0.2",
-    "@types/node": "^20.17.48",
+    "@types/node": "^22.15.29",
     "changelogen": "^0.6.1",
     "eslint": "^9.27.0",
     "nuxt": "^3.17.4",
