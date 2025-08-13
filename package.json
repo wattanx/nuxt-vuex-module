@@ -31,7 +31,7 @@
     "vuex": "^4.1.0"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.17.4",
+    "@nuxt/kit": "^4.0.3",
     "hash-sum": "^2.0.0",
     "knitwork": "^1.2.0"
   },
@@ -39,13 +39,13 @@
     "@nuxt/devtools": "latest",
     "@nuxt/eslint-config": "^0.7.6",
     "@nuxt/module-builder": "^1.0.1",
-    "@nuxt/schema": "^3.17.4",
+    "@nuxt/schema": "^4.0.3",
     "@nuxt/test-utils": "^3.19.0",
     "@types/hash-sum": "^1.0.2",
     "@types/node": "^20.17.48",
     "changelogen": "^0.6.1",
     "eslint": "^9.27.0",
-    "nuxt": "^3.17.4",
+    "nuxt": "^4.0.3",
     "vitest": "^3.1.4"
   },
   "packageManager": "pnpm@10.11.0",
