@@ -28,31 +28,31 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6(@typescript-eslint/utils@8.39.1(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
       '@nuxt/module-builder':
-        specifier: ^1.0.1
+        specifier: ^1.0.2
         version: 1.0.2(@nuxt/cli@3.28.0(magicast@0.3.5))(@vue/compiler-core@3.5.18)(esbuild@0.25.9)(typescript@5.9.2)(vue@3.5.18(typescript@5.9.2))
       '@nuxt/schema':
         specifier: ^4.0.3
         version: 4.0.3
       '@nuxt/test-utils':
-        specifier: ^3.19.0
+        specifier: ^3.19.2
         version: 3.19.2(magicast@0.3.5)(typescript@5.9.2)(vitest@3.2.4(@types/node@20.19.10)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.1))
       '@types/hash-sum':
         specifier: ^1.0.2
         version: 1.0.2
       '@types/node':
-        specifier: ^20.17.48
+        specifier: ^20.19.10
         version: 20.19.10
       changelogen:
-        specifier: ^0.6.1
+        specifier: ^0.6.2
         version: 0.6.2(magicast@0.3.5)
       eslint:
-        specifier: ^9.27.0
+        specifier: ^9.33.0
         version: 9.33.0(jiti@2.5.1)
       nuxt:
         specifier: ^4.0.3
         version: 4.0.3(@netlify/blobs@9.1.2)(@parcel/watcher@2.5.1)(@types/node@20.19.10)(@vue/compiler-sfc@3.5.18)(db0@0.3.2)(eslint@9.33.0(jiti@2.5.1))(ioredis@5.7.0)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.46.2)(terser@5.43.1)(typescript@5.9.2)(vite@7.1.2(@types/node@20.19.10)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.1))(yaml@2.8.1)
       vitest:
-        specifier: ^3.1.4
+        specifier: ^3.2.4
         version: 3.2.4(@types/node@20.19.10)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.1)
 
 packages:
