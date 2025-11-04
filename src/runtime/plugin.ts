@@ -6,7 +6,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const store = createVuexStore();
   nuxtApp.vueApp.use(store);
 
-  if (process.server) {
+  if (import.meta.server) {
     nuxtApp.payload.store = store.state;
   } else if (nuxtApp.payload && nuxtApp.payload.store) {
     store.replaceState(nuxtApp.payload.store);
