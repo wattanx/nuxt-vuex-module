@@ -25,6 +25,7 @@
     "release": "npm run lint && npm run test && npm run prepack && changelogen --release --major --no-commit --no-tag",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:typecheck": "vitest --typecheck --run",
     "test:watch": "vitest watch"
   },
   "peerDependencies": {
