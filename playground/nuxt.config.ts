@@ -1,5 +1,7 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
-  vuex: {},
+  vuex: {
+    typedStore: true,
+  },
   devtools: { enabled: true },
 });

@@ -2,6 +2,7 @@ import {
   defineNuxtModule,
   resolveFiles,
   addTemplate,
+  addTypeTemplate,
   addPlugin,
   createResolver,
 } from '@nuxt/kit';
@@ -9,7 +10,15 @@ import hash from 'hash-sum';
 import { genImport, genObjectFromRawEntries } from 'knitwork';
 
 // Module options TypeScript interface definition
-export interface ModuleOptions {}
+export interface ModuleOptions {
+  /**
+   * Generate typed Vuex store declarations.
+   * When enabled, `.nuxt/vuex-store.d.ts` is generated to provide
+   * type-safe `state`, `getters`, `commit`, and `dispatch`.
+   * @default false
+   */
+  typedStore?: boolean;
+}
 
 type StoreModule = {
   filePath: string;
@@ -150,6 +159,172 @@ function mergeProperty (storeModule, moduleData, property) {
     storeModule[property] = { ...storeModule[property], ...moduleData }
   }
 }`;
+      },
+    });
+
+    // Generate type declarations for typed Vuex store
+    if (!options.typedStore) {
+      addPlugin(resolve('./runtime/plugin'));
+      return;
+    }
+
+    addTypeTemplate({
+      filename: 'vuex-store.d.ts',
+      getContents() {
+        // Compute metadata for each module
+        type ModuleInfo = {
+          id: string;
+          filePath: string;
+          namespaces: string[];
+          importAlias: string;
+          typeAlias: string;
+          prefix: string;
+          importPath: string;
+        };
+
+        const modules: ModuleInfo[] = _storeModules.map(({ filePath, id }) => {
+          const namespaces = id === 'root' ? [] : id.split('/').filter(Boolean);
+          const safeName = id === 'root' ? 'root' : namespaces.join('_');
+          const importAlias = `__store_${safeName}`;
+          const typeAlias = `_${safeName.split('_').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`;
+          const prefix =
+            id === 'root' ? '' : namespaces.join('/') + '/';
+          const importPath = filePath.replace(/\.(ts|js)$/, '');
+          return { id, filePath, namespaces, importAlias, typeAlias, prefix, importPath };
+        });
+
+        // Build module tree for nested state type
+        type TreeNode = {
+          __typeAlias: string | null;
+          children: Record<string, TreeNode>;
+        };
+
+        const tree: TreeNode = { __typeAlias: null, children: {} };
+        for (const mod of modules) {
+          if (mod.id === 'root') {
+            tree.__typeAlias = mod.typeAlias;
+            continue;
+          }
+          let node: TreeNode = tree;
+          for (const ns of mod.namespaces) {
+            if (!node.children[ns]) {
+              node.children[ns] = { __typeAlias: null, children: {} };
+            }
+            node = node.children[ns];
+          }
+          node.__typeAlias = mod.typeAlias;
+        }
+
+        // Recursively generate nested state type string
+        function genStateType(node: TreeNode, indent: string): string {
+          const parts: string[] = [];
+          if (node.__typeAlias) {
+            parts.push(`StateOf<${node.__typeAlias}>`);
+          }
+          const childKeys = Object.keys(node.children);
+          if (childKeys.length > 0) {
+            const entries = childKeys.map((key) => {
+              return `${indent}  ${key}: ${genStateType(node.children[key]!, indent + '  ')}`;
+            });
+            parts.push(`{\n${entries.join(';\n')};\n${indent}}`);
+          }
+          return parts.length === 0 ? '{}' : parts.join(' & ');
+        }
+
+        // Generate mapped type with optional namespace prefix
+        function genMappedType(extractor: string, modules: ModuleInfo[]): string {
+          if (modules.length === 0) return '{}';
+          return modules.map((mod) => {
+            const keyRemap = mod.prefix
+              ? `K extends string ? \`${mod.prefix}\${K}\` : never`
+              : 'K extends string ? K : never';
+            return `{ [K in keyof ${extractor}<${mod.typeAlias}> as ${keyRemap}]: ${extractor}<${mod.typeAlias}>[K] }`;
+          }).join(' &\n  ');
+        }
+
+        // Generate getter mapped type (extracts return types)
+        function genGetterMappedType(modules: ModuleInfo[]): string {
+          if (modules.length === 0) return '{}';
+          return modules.map((mod) => {
+            const keyRemap = mod.prefix
+              ? `K extends string ? \`${mod.prefix}\${K}\` : never`
+              : 'K extends string ? K : never';
+            return `{ [K in keyof GettersOf<${mod.typeAlias}> as ${keyRemap}]: GetterReturnType<GettersOf<${mod.typeAlias}>[K]> }`;
+          }).join(' &\n  ');
+        }
+
+        const imports = modules
+          .map((mod) => `import type * as ${mod.importAlias} from '${mod.importPath}';`)
+          .join('\n');
+
+        const resolvedTypes = modules
+          .map((mod) => `type ${mod.typeAlias} = ResolveModule<typeof ${mod.importAlias}>;`)
+          .join('\n');
+
+        return `${imports}
+
+// Utility types for extracting Vuex module components
+type ResolveModule<M> = M extends { default: infer D } ? D : M;
+type StateOf<M> = M extends { state: infer S } ? S extends () => infer R ? R : S : {};
+type GettersOf<M> = M extends { getters: infer G } ? G : {};
+type MutationsOf<M> = M extends { mutations: infer Mu } ? Mu : {};
+type ActionsOf<M> = M extends { actions: infer A } ? A : {};
+type GetterReturnType<G> = G extends (...args: any[]) => infer R ? R : never;
+
+// Use Parameters tuple check instead of function signature matching
+// to correctly distinguish functions with/without a payload parameter.
+type PayloadArgs<F> = F extends (...args: any[]) => any ? Parameters<F> extends [any, infer P, ...any[]] ? [payload: P] : [] : [];
+
+${resolvedTypes}
+
+type RootState = ${genStateType(tree, '')};
+
+type AllGetters = ${genGetterMappedType(modules)};
+
+type AllMutations = ${genMappedType('MutationsOf', modules)};
+
+type AllActions = ${genMappedType('ActionsOf', modules)};
+
+interface TypedCommit {
+  <T extends keyof AllMutations>(
+    type: T,
+    ...args: PayloadArgs<AllMutations[T]>
+  ): void;
+}
+
+interface TypedDispatch {
+  <T extends keyof AllActions>(
+    type: T,
+    ...args: PayloadArgs<AllActions[T]>
+  ): Promise<any>;
+}
+
+interface TypedStore {
+  readonly state: RootState;
+  readonly getters: AllGetters;
+  commit: TypedCommit;
+  dispatch: TypedDispatch;
+  replaceState(state: RootState): void;
+  install(app: import('vue').App): void;
+}
+
+declare module 'vuex' {
+  export function useStore(): TypedStore;
+}
+
+declare module '#app' {
+  interface NuxtApp {
+    $store: TypedStore;
+  }
+}
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $store: TypedStore;
+  }
+}
+
+export {};`;
       },
     });
 
