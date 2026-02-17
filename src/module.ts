@@ -231,116 +231,100 @@ function mergeProperty (storeModule, moduleData, property) {
           return parts.length === 0 ? '{}' : parts.join(' & ');
         }
 
-        const lines: string[] = [];
-
-        // Section 1: Type imports
-        for (const mod of modules) {
-          lines.push(`import type * as ${mod.importAlias} from '${mod.importPath}';`);
+        // Generate mapped type with optional namespace prefix
+        function genMappedType(extractor: string, modules: ModuleInfo[]): string {
+          if (modules.length === 0) return '{}';
+          return modules.map((mod) => {
+            const keyRemap = mod.prefix
+              ? `K extends string ? \`${mod.prefix}\${K}\` : never`
+              : 'K extends string ? K : never';
+            return `{ [K in keyof ${extractor}<${mod.typeAlias}> as ${keyRemap}]: ${extractor}<${mod.typeAlias}>[K] }`;
+          }).join(' &\n  ');
         }
-        lines.push('');
 
-        // Section 2: Utility types
-        lines.push('// Utility types for extracting Vuex module components');
-        lines.push('type ResolveModule<M> = M extends { default: infer D } ? D : M;');
-        lines.push('type StateOf<M> = M extends { state: infer S } ? S extends () => infer R ? R : S : {};');
-        lines.push('type GettersOf<M> = M extends { getters: infer G } ? G : {};');
-        lines.push('type MutationsOf<M> = M extends { mutations: infer Mu } ? Mu : {};');
-        lines.push('type ActionsOf<M> = M extends { actions: infer A } ? A : {};');
-        lines.push('type GetterReturnType<G> = G extends (...args: any[]) => infer R ? R : never;');
-        lines.push('');
-
-        // Section 3: Resolved module types
-        for (const mod of modules) {
-          lines.push(`type ${mod.typeAlias} = ResolveModule<typeof ${mod.importAlias}>;`);
+        // Generate getter mapped type (extracts return types)
+        function genGetterMappedType(modules: ModuleInfo[]): string {
+          if (modules.length === 0) return '{}';
+          return modules.map((mod) => {
+            const keyRemap = mod.prefix
+              ? `K extends string ? \`${mod.prefix}\${K}\` : never`
+              : 'K extends string ? K : never';
+            return `{ [K in keyof GettersOf<${mod.typeAlias}> as ${keyRemap}]: GetterReturnType<GettersOf<${mod.typeAlias}>[K]> }`;
+          }).join(' &\n  ');
         }
-        lines.push('');
 
-        // Section 4: RootState
-        lines.push(`type RootState = ${genStateType(tree, '')};`);
-        lines.push('');
+        const imports = modules
+          .map((mod) => `import type * as ${mod.importAlias} from '${mod.importPath}';`)
+          .join('\n');
 
-        // Section 5: AllGetters
-        const getterParts = modules.map((mod) => {
-          const keyRemap = mod.prefix
-            ? `K extends string ? \`${mod.prefix}\${K}\` : never`
-            : 'K extends string ? K : never';
-          return `{ [K in keyof GettersOf<${mod.typeAlias}> as ${keyRemap}]: GetterReturnType<GettersOf<${mod.typeAlias}>[K]> }`;
-        });
-        lines.push(`type AllGetters = ${getterParts.join(' &\n  ') || '{}'};`);
-        lines.push('');
+        const resolvedTypes = modules
+          .map((mod) => `type ${mod.typeAlias} = ResolveModule<typeof ${mod.importAlias}>;`)
+          .join('\n');
 
-        // Section 5: AllMutations
-        const mutationParts = modules.map((mod) => {
-          const keyRemap = mod.prefix
-            ? `K extends string ? \`${mod.prefix}\${K}\` : never`
-            : 'K extends string ? K : never';
-          return `{ [K in keyof MutationsOf<${mod.typeAlias}> as ${keyRemap}]: MutationsOf<${mod.typeAlias}>[K] }`;
-        });
-        lines.push(`type AllMutations = ${mutationParts.join(' &\n  ') || '{}'};`);
-        lines.push('');
+        return `${imports}
 
-        // Section 5: AllActions
-        const actionParts = modules.map((mod) => {
-          const keyRemap = mod.prefix
-            ? `K extends string ? \`${mod.prefix}\${K}\` : never`
-            : 'K extends string ? K : never';
-          return `{ [K in keyof ActionsOf<${mod.typeAlias}> as ${keyRemap}]: ActionsOf<${mod.typeAlias}>[K] }`;
-        });
-        lines.push(`type AllActions = ${actionParts.join(' &\n  ') || '{}'};`);
-        lines.push('');
+// Utility types for extracting Vuex module components
+type ResolveModule<M> = M extends { default: infer D } ? D : M;
+type StateOf<M> = M extends { state: infer S } ? S extends () => infer R ? R : S : {};
+type GettersOf<M> = M extends { getters: infer G } ? G : {};
+type MutationsOf<M> = M extends { mutations: infer Mu } ? Mu : {};
+type ActionsOf<M> = M extends { actions: infer A } ? A : {};
+type GetterReturnType<G> = G extends (...args: any[]) => infer R ? R : never;
 
-        // Section 6: TypedCommit / TypedDispatch
-        // Use Parameters tuple check instead of function signature matching
-        // to correctly distinguish functions with/without a payload parameter.
-        // A 1-param function `(state) => void` matches `(state, payload: infer P) => any`
-        // in TypeScript due to function assignability rules, so we use tuple extends instead.
-        lines.push('type MutationPayloadArgs<F> = F extends (...args: any[]) => any ? Parameters<F> extends [any, infer P, ...any[]] ? [payload: P] : [] : [];');
-        lines.push('type ActionPayloadArgs<F> = F extends (...args: any[]) => any ? Parameters<F> extends [any, infer P, ...any[]] ? [payload: P] : [] : [];');
-        lines.push('');
-        lines.push('interface TypedCommit {');
-        lines.push('  <T extends keyof AllMutations>(');
-        lines.push('    type: T,');
-        lines.push('    ...args: MutationPayloadArgs<AllMutations[T]>');
-        lines.push('  ): void;');
-        lines.push('}');
-        lines.push('');
-        lines.push('interface TypedDispatch {');
-        lines.push('  <T extends keyof AllActions>(');
-        lines.push('    type: T,');
-        lines.push('    ...args: ActionPayloadArgs<AllActions[T]>');
-        lines.push('  ): Promise<any>;');
-        lines.push('}');
-        lines.push('');
+// Use Parameters tuple check instead of function signature matching
+// to correctly distinguish functions with/without a payload parameter.
+type PayloadArgs<F> = F extends (...args: any[]) => any ? Parameters<F> extends [any, infer P, ...any[]] ? [payload: P] : [] : [];
 
-        // Section 7: TypedStore and module augmentations
-        lines.push('interface TypedStore {');
-        lines.push('  readonly state: RootState;');
-        lines.push('  readonly getters: AllGetters;');
-        lines.push('  commit: TypedCommit;');
-        lines.push('  dispatch: TypedDispatch;');
-        lines.push('  replaceState(state: RootState): void;');
-        lines.push("  install(app: import('vue').App): void;");
-        lines.push('}');
-        lines.push('');
-        lines.push("declare module 'vuex' {");
-        lines.push('  export function useStore(): TypedStore;');
-        lines.push('}');
-        lines.push('');
-        lines.push("declare module '#app' {");
-        lines.push('  interface NuxtApp {');
-        lines.push('    $store: TypedStore;');
-        lines.push('  }');
-        lines.push('}');
-        lines.push('');
-        lines.push("declare module '@vue/runtime-core' {");
-        lines.push('  interface ComponentCustomProperties {');
-        lines.push('    $store: TypedStore;');
-        lines.push('  }');
-        lines.push('}');
-        lines.push('');
-        lines.push('export {};');
+${resolvedTypes}
 
-        return lines.join('\n');
+type RootState = ${genStateType(tree, '')};
+
+type AllGetters = ${genGetterMappedType(modules)};
+
+type AllMutations = ${genMappedType('MutationsOf', modules)};
+
+type AllActions = ${genMappedType('ActionsOf', modules)};
+
+interface TypedCommit {
+  <T extends keyof AllMutations>(
+    type: T,
+    ...args: PayloadArgs<AllMutations[T]>
+  ): void;
+}
+
+interface TypedDispatch {
+  <T extends keyof AllActions>(
+    type: T,
+    ...args: PayloadArgs<AllActions[T]>
+  ): Promise<any>;
+}
+
+interface TypedStore {
+  readonly state: RootState;
+  readonly getters: AllGetters;
+  commit: TypedCommit;
+  dispatch: TypedDispatch;
+  replaceState(state: RootState): void;
+  install(app: import('vue').App): void;
+}
+
+declare module 'vuex' {
+  export function useStore(): TypedStore;
+}
+
+declare module '#app' {
+  interface NuxtApp {
+    $store: TypedStore;
+  }
+}
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $store: TypedStore;
+  }
+}
+
+export {};`;
       },
     });
 
