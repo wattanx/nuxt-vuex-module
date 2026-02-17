@@ -1,6 +1,6 @@
 {
   "name": "@wattanx/nuxt-vuex",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "vuex module for Nuxt 3.",
   "repository": "https://github.com/wattanx/nuxt-vuex-module",
   "license": "MIT",
