@@ -1,4 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
+import type { DefineMutations, DefineActions } from 'vuex-type-helper';
 
 // Replicate the generated utility types to test them in isolation
 type ResolveModule<M> = M extends { default: infer D } ? D : M;
@@ -13,8 +14,11 @@ type ActionsOf<M> = M extends { actions: infer A } ? A : {};
 type GetterReturnType<G> = G extends (...args: any[]) => infer R
   ? R
   : never;
-type PayloadArgs<F> = F extends (first: any, ...rest: infer R) => any
-  ? R
+type Tail<T extends any[]> = T extends [any, ...infer R] ? R : [];
+type PayloadArgs<F> = F extends (...args: any[]) => any
+  ? void extends Parameters<F>[1]
+    ? []
+    : Tail<Parameters<F>>
   : [];
 
 // Simulated store module types
@@ -166,6 +170,26 @@ describe('PayloadArgs', () => {
     expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<
       [query?: string | undefined]
     >();
+  });
+
+  it('returns [] for void payload (vuex-type-helper DefineMutations)', () => {
+    type State = { count: number };
+    type Mutations = DefineMutations<{ increment: void }, State>;
+    expectTypeOf<PayloadArgs<Mutations['increment']>>().toEqualTypeOf<[]>();
+  });
+
+  it('returns [P] for non-void payload (vuex-type-helper DefineMutations)', () => {
+    type State = { count: number };
+    type Mutations = DefineMutations<{ add: { amount: number } }, State>;
+    expectTypeOf<PayloadArgs<Mutations['add']>>().toEqualTypeOf<
+      [payload: { amount: number }]
+    >();
+  });
+
+  it('returns [] for void payload (vuex-type-helper DefineActions)', () => {
+    type State = { count: number };
+    type Actions = DefineActions<{ fetch: void }, State, {}>;
+    expectTypeOf<PayloadArgs<Actions['fetch']>>().toEqualTypeOf<[]>();
   });
 });
 

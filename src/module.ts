@@ -271,9 +271,10 @@ type MutationsOf<M> = M extends { mutations: infer Mu } ? Mu : {};
 type ActionsOf<M> = M extends { actions: infer A } ? A : {};
 type GetterReturnType<G> = G extends (...args: any[]) => infer R ? R : never;
 
-// Extract parameters after the first one (state for mutations, context for actions).
-// This preserves optionality of the payload parameter.
-type PayloadArgs<F> = F extends (first: any, ...rest: infer R) => any ? R : [];
+// Extract payload parameters (everything after the first param: state/context).
+// void payloads (from vuex-type-helper) are normalized to [] so commit/dispatch can be called without arguments.
+type Tail<T extends any[]> = T extends [any, ...infer R] ? R : [];
+type PayloadArgs<F> = F extends (...args: any[]) => any ? void extends Parameters<F>[1] ? [] : Tail<Parameters<F>> : [];
 
 ${resolvedTypes}
 

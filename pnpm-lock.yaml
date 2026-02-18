@@ -17,9 +17,6 @@ importers:
       knitwork:
         specifier: ^1.3.0
         version: 1.3.0
-      vuex:
-        specifier: ^4.1.0
-        version: 4.1.0(vue@3.5.28(typescript@5.9.3))
     devDependencies:
       '@nuxt/devtools':
         specifier: latest
@@ -54,6 +51,12 @@ importers:
       vitest:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@24.10.13)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2)
+      vuex:
+        specifier: ^4.1.0
+        version: 4.1.0(vue@3.5.28(typescript@5.9.3))
+      vuex-type-helper:
+        specifier: ^1.3.1
+        version: 1.3.1
 
 packages:
 
@@ -4402,6 +4405,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  vuex-type-helper@1.3.1:
+    resolution: {integrity: sha512-dCOHAeOFPufbBGLWPgh6WFEjvCHwaRwIbeurmC3CZPQbtSPcjS2OjHiseN5OAflqQt/OFNG+nIpGIyAjUpCcjg==}
 
   vuex@4.1.0:
     resolution: {integrity: sha512-hmV6UerDrPcgbSy9ORAtNXDr9M4wlNP4pEFKye4ujJF8oqgFFuxDCdOLS3eNoRTtq5O3hoBDh9Doj1bQMYHRbQ==}
@@ -9090,6 +9096,8 @@ snapshots:
       '@vue/shared': 3.5.28
     optionalDependencies:
       typescript: 5.9.3
+
+  vuex-type-helper@1.3.1: {}
 
   vuex@4.1.0(vue@3.5.28(typescript@5.9.3)):
     dependencies:
