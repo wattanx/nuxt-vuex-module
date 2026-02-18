@@ -1,4 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
+import type { DefineMutations, DefineActions } from 'vuex-type-helper';
 
 // Replicate the generated utility types to test them in isolation
 type ResolveModule<M> = M extends { default: infer D } ? D : M;
@@ -13,10 +14,11 @@ type ActionsOf<M> = M extends { actions: infer A } ? A : {};
 type GetterReturnType<G> = G extends (...args: any[]) => infer R
   ? R
   : never;
+type Tail<T extends any[]> = T extends [any, ...infer R] ? R : [];
 type PayloadArgs<F> = F extends (...args: any[]) => any
-  ? Parameters<F> extends [any, infer P, ...any[]]
-    ? [payload: P]
-    : []
+  ? void extends Parameters<F>[1]
+    ? []
+    : Tail<Parameters<F>>
   : [];
 
 // Simulated store module types
@@ -141,9 +143,9 @@ describe('PayloadArgs', () => {
     expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[]>();
   });
 
-  it('returns [payload: P] for mutations with payload', () => {
+  it('returns [P] for mutations with required payload', () => {
     type Fn = (state: { email: string }, email: string) => void;
-    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[payload: string]>();
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[email: string]>();
   });
 
   it('returns [] for actions without payload', () => {
@@ -151,9 +153,43 @@ describe('PayloadArgs', () => {
     expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[]>();
   });
 
-  it('returns [payload: P] for actions with payload', () => {
+  it('returns [P] for actions with required payload', () => {
     type Fn = (context: { commit: any }, name: string) => void;
-    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[payload: string]>();
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[name: string]>();
+  });
+
+  it('returns [P?] for optional mutation payload', () => {
+    type Fn = (state: { count: number }, value?: number) => void;
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<
+      [value?: number | undefined]
+    >();
+  });
+
+  it('returns [P?] for optional action payload', () => {
+    type Fn = (context: { commit: any }, query?: string) => void;
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<
+      [query?: string | undefined]
+    >();
+  });
+
+  it('returns [] for void payload (vuex-type-helper DefineMutations)', () => {
+    type State = { count: number };
+    type Mutations = DefineMutations<{ increment: void }, State>;
+    expectTypeOf<PayloadArgs<Mutations['increment']>>().toEqualTypeOf<[]>();
+  });
+
+  it('returns [P] for non-void payload (vuex-type-helper DefineMutations)', () => {
+    type State = { count: number };
+    type Mutations = DefineMutations<{ add: { amount: number } }, State>;
+    expectTypeOf<PayloadArgs<Mutations['add']>>().toEqualTypeOf<
+      [payload: { amount: number }]
+    >();
+  });
+
+  it('returns [] for void payload (vuex-type-helper DefineActions)', () => {
+    type State = { count: number };
+    type Actions = DefineActions<{ fetch: void }, State, {}>;
+    expectTypeOf<PayloadArgs<Actions['fetch']>>().toEqualTypeOf<[]>();
   });
 });
 
