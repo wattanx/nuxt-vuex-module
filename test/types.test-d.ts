@@ -13,10 +13,8 @@ type ActionsOf<M> = M extends { actions: infer A } ? A : {};
 type GetterReturnType<G> = G extends (...args: any[]) => infer R
   ? R
   : never;
-type PayloadArgs<F> = F extends (...args: any[]) => any
-  ? Parameters<F> extends [any, infer P, ...any[]]
-    ? [payload: P]
-    : []
+type PayloadArgs<F> = F extends (first: any, ...rest: infer R) => any
+  ? R
   : [];
 
 // Simulated store module types
@@ -141,9 +139,9 @@ describe('PayloadArgs', () => {
     expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[]>();
   });
 
-  it('returns [payload: P] for mutations with payload', () => {
+  it('returns [P] for mutations with required payload', () => {
     type Fn = (state: { email: string }, email: string) => void;
-    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[payload: string]>();
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[email: string]>();
   });
 
   it('returns [] for actions without payload', () => {
@@ -151,9 +149,23 @@ describe('PayloadArgs', () => {
     expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[]>();
   });
 
-  it('returns [payload: P] for actions with payload', () => {
+  it('returns [P] for actions with required payload', () => {
     type Fn = (context: { commit: any }, name: string) => void;
-    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[payload: string]>();
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<[name: string]>();
+  });
+
+  it('returns [P?] for optional mutation payload', () => {
+    type Fn = (state: { count: number }, value?: number) => void;
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<
+      [value?: number | undefined]
+    >();
+  });
+
+  it('returns [P?] for optional action payload', () => {
+    type Fn = (context: { commit: any }, query?: string) => void;
+    expectTypeOf<PayloadArgs<Fn>>().toEqualTypeOf<
+      [query?: string | undefined]
+    >();
   });
 });
 

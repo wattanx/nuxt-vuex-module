@@ -271,9 +271,9 @@ type MutationsOf<M> = M extends { mutations: infer Mu } ? Mu : {};
 type ActionsOf<M> = M extends { actions: infer A } ? A : {};
 type GetterReturnType<G> = G extends (...args: any[]) => infer R ? R : never;
 
-// Use Parameters tuple check instead of function signature matching
-// to correctly distinguish functions with/without a payload parameter.
-type PayloadArgs<F> = F extends (...args: any[]) => any ? Parameters<F> extends [any, infer P, ...any[]] ? [payload: P] : [] : [];
+// Extract parameters after the first one (state for mutations, context for actions).
+// This preserves optionality of the payload parameter.
+type PayloadArgs<F> = F extends (first: any, ...rest: infer R) => any ? R : [];
 
 ${resolvedTypes}
 
