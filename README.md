@@ -56,6 +56,60 @@ export default defineNuxtPlugin(() => {
 });
 ```
 
+## Typed Store (Opt-in)
+
+You can enable automatic TypeScript type generation for your Vuex store. When enabled, `state`, `getters`, `commit`, and `dispatch` are fully typed based on your `store/` directory structure.
+
+### Setup
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  vuex: {
+    typedStore: true,
+  },
+});
+```
+
+### What gets typed
+
+```typescript
+const { $store } = useNuxtApp();
+
+// State — fully typed with nested modules
+$store.state.count;
+$store.state.account.email;
+$store.state.account.user.setting.name;
+
+// Commit — mutation names are auto-completed, payloads are type-checked
+$store.commit('increment');
+$store.commit('account/setEmail', 'foo@bar.com');
+
+// Dispatch — same type safety as commit
+$store.dispatch('account/user/setting/setName', 'Alice');
+
+// useStore() from vuex is also typed
+const store = useStore();
+store.state.count;
+```
+
+Optional payloads are also supported:
+
+```typescript
+// store/index.ts
+export const mutations = {
+  increment(state: State, value?: number) {
+    state.count += value ?? 1;
+  },
+};
+
+// Both are valid
+$store.commit('increment');
+$store.commit('increment', 5);
+```
+
+The [vuex-type-helper](https://github.com/ktsn/vuex-type-helper) pattern (`DefineMutations`, `DefineActions`) is also supported.
+
 ## Development
 
 ```bash
