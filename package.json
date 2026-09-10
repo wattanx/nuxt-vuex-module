@@ -45,7 +45,7 @@
     "@types/hash-sum": "^1.0.2",
     "@types/node": "^24.13.3",
     "changelogen": "^0.6.2",
-    "eslint": "^9.39.5",
+    "eslint": "^10.10.0",
     "nuxt": "^4.5.2",
     "vitest": "^4.1.11",
     "vuex": "^4.1.0",
